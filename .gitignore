@@ -65,6 +65,11 @@ htmlcov/
 .ipynb_checkpoints/
 __pypackages__/
 
+# Allow frontend lib folder
+!**/frontend/lib/
+!**/lib/api.*
+!**/lib/types.*
+
 ############################
 # Node / Next.js
 ############################
