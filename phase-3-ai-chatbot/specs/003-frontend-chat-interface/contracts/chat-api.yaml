@@ -1,0 +1,249 @@
+openapi: 3.0.3
+info:
+  title: Chat API Contract
+  description: Frontend integration contract for conversational chat endpoint
+  version: 1.0.0
+  contact:
+    name: Todo AI Chatbot - Phase 3
+
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+  - url: https://api.yourdomain.com
+    description: Production server
+
+paths:
+  /api/{user_id}/chat:
+    post:
+      summary: Send chat message and receive AI response
+      description: |
+        Sends a user message to the AI agent and receives a conversational response.
+        The agent may execute MCP tools (add_task, list_tasks, complete_task, delete_task, update_task)
+        based on the natural language input. Conversation history is maintained in the backend database.
+      operationId: sendChatMessage
+      tags:
+        - Chat
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: Authenticated user's UUID
+          schema:
+            type: string
+            format: uuid
+            example: "550e8400-e29b-41d4-a716-446655440000"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - message
+              properties:
+                conversationId:
+                  type: integer
+                  description: |
+                    Optional conversation ID for continuing an existing conversation.
+                    Omit this field to start a new conversation.
+                  example: 42
+                message:
+                  type: string
+                  description: User's natural language message
+                  minLength: 1
+                  maxLength: 1000
+                  example: "add task buy groceries"
+            examples:
+              newConversation:
+                summary: Start new conversation
+                value:
+                  message: "add task buy groceries"
+              continueConversation:
+                summary: Continue existing conversation
+                value:
+                  conversationId: 42
+                  message: "show me all tasks"
+      responses:
+        '200':
+          description: Successful response with AI agent's reply
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - conversationId
+                  - response
+                  - toolCalls
+                properties:
+                  conversationId:
+                    type: integer
+                    description: Conversation ID (new or existing)
+                    example: 42
+                  response:
+                    type: string
+                    description: AI agent's conversational response
+                    example: "I've added 'Buy groceries' to your tasks."
+                  toolCalls:
+                    type: array
+                    description: Array of MCP tool names that were executed
+                    items:
+                      type: string
+                      enum:
+                        - add_task
+                        - list_tasks
+                        - complete_task
+                        - delete_task
+                        - update_task
+                    example: ["add_task"]
+              examples:
+                taskAdded:
+                  summary: Task added successfully
+                  value:
+                    conversationId: 42
+                    response: "I've added 'Buy groceries' to your tasks."
+                    toolCalls: ["add_task"]
+                tasksList:
+                  summary: Tasks listed
+                  value:
+                    conversationId: 42
+                    response: "Here are your tasks:\n1. Buy groceries (pending)\n2. Call mom (pending)"
+                    toolCalls: ["list_tasks"]
+                noToolsExecuted:
+                  summary: Conversational response without tools
+                  value:
+                    conversationId: 42
+                    response: "I didn't understand that. Could you rephrase? Try 'add task [title]' or 'show me all tasks'."
+                    toolCalls: []
+        '400':
+          description: Bad request - Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                emptyMessage:
+                  summary: Empty message
+                  value:
+                    detail: "Message cannot be empty"
+                messageTooLong:
+                  summary: Message exceeds max length
+                  value:
+                    detail: "Message exceeds maximum length of 1000 characters"
+        '401':
+          description: Unauthorized - Invalid or missing JWT token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                missingToken:
+                  summary: Missing authorization header
+                  value:
+                    detail: "Not authenticated"
+                invalidToken:
+                  summary: Invalid JWT token
+                  value:
+                    detail: "Invalid authentication credentials"
+                expiredToken:
+                  summary: Expired JWT token
+                  value:
+                    detail: "Token has expired"
+        '403':
+          description: Forbidden - User ID mismatch
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                userIdMismatch:
+                  summary: URL user_id doesn't match authenticated user
+                  value:
+                    detail: "Access denied: user_id mismatch"
+        '404':
+          description: Not found - Conversation ID doesn't exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                conversationNotFound:
+                  summary: Invalid conversation ID
+                  value:
+                    detail: "Conversation not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                serverError:
+                  summary: Generic server error
+                  value:
+                    detail: "Internal server error"
+                openaiError:
+                  summary: OpenAI API error
+                  value:
+                    detail: "AI service temporarily unavailable"
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT token obtained from /api/auth/login endpoint.
+        Include in Authorization header as: Bearer <token>
+
+  schemas:
+    Error:
+      type: object
+      required:
+        - detail
+      properties:
+        detail:
+          type: string
+          description: Human-readable error message
+          example: "Not authenticated"
+
+  examples:
+    naturalLanguageExamples:
+      summary: Natural language examples
+      description: |
+        Examples of natural language inputs the AI agent can handle:
+
+        **Add Task**:
+        - "add task buy groceries"
+        - "remember to call mom tonight"
+        - "I need to pay bills"
+
+        **List Tasks**:
+        - "show me all tasks"
+        - "what's pending?"
+        - "what have I completed?"
+
+        **Complete Task**:
+        - "mark task 3 as done"
+        - "complete the groceries task"
+        - "I finished task 5"
+
+        **Delete Task**:
+        - "delete task 2"
+        - "remove the meeting task"
+        - "cancel task 7"
+
+        **Update Task**:
+        - "change task 1 to 'call mom tonight'"
+        - "update task 3 title to 'buy milk'"
+        - "rename task 5"
+
+tags:
+  - name: Chat
+    description: Conversational interface for task management
+
+externalDocs:
+  description: Full API documentation
+  url: https://github.com/your-org/todo-ai-chatbot
