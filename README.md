@@ -23,7 +23,7 @@ Console Script → Web Application → AI Chatbot → Kubernetes → Cloud Produ
 |-------|-------------|--------|-----------|
 | **[Phase 1: Console](./phase-1-console/)** | In-memory Python CLI | ✅ Complete | - |
 | **[Phase 2: Full-Stack](./phase-2-fullstack/)** | Multi-user web app | ✅ Complete | [View →](https://the-evolution-of-todo-sandy.vercel.app/) |
-| **[Phase 3: AI Chatbot](./phase-3-ai-chatbot/)** | AI-powered task management | ✅ Complete | TBD |
+| **[Phase 3: AI Chatbot](./phase-3-ai-chatbot/)** | AI-powered task management | ✅ Complete | [View →](https://the-evolution-of-todo-dun.vercel.app/) |
 | **[Phase 4: Kubernetes](./phase-4-kubernetes/)** | Containerized deployment | 📋 Planned | Local (Minikube) |
 | **[Phase 5: Cloud Native](./phase-5-cloud/)** | Event-driven production | 📋 Planned | Azure/GCP |
 
@@ -174,7 +174,7 @@ All phases built with AI-assisted development and zero manual coding.
 - **Completed**: 3/5 (60%)
 - **Next Up**: Phase 4 (Kubernetes)
 - **Lines of Code**: ~5,000+
-- **Live Deployments**: Phase 2 on Vercel
+- **Live Deployments**: Phase 2 & Phase 3 on Vercel
 - **AI Features**: 5 MCP tools, conversational interface, stateless agent
 
 ---
