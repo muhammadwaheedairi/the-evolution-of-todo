@@ -22,8 +22,8 @@ Console Script → Web Application → AI Chatbot → Kubernetes → Cloud Produ
 | Stage | Description | Status | Live Demo |
 |-------|-------------|--------|-----------|
 | **[Phase 1: Console](./phase-1-console/)** | In-memory Python CLI | ✅ Complete | - |
-| **[Phase 2: Full-Stack](./phase-2-fullstack/)** | Multi-user web app | ✅ Complete | [View →](https://your-deployment-url.vercel.app) |
-| **[Phase 3: AI Chatbot](./phase-3-ai-chatbot/)** | Natural language interface | 📋 Planned | TBD |
+| **[Phase 2: Full-Stack](./phase-2-fullstack/)** | Multi-user web app | ✅ Complete | [View →](https://the-evolution-of-todo-sandy.vercel.app/) |
+| **[Phase 3: AI Chatbot](./phase-3-ai-chatbot/)** | AI-powered task management | ✅ Complete | TBD |
 | **[Phase 4: Kubernetes](./phase-4-kubernetes/)** | Containerized deployment | 📋 Planned | Local (Minikube) |
 | **[Phase 5: Cloud Native](./phase-5-cloud/)** | Event-driven production | 📋 Planned | Azure/GCP |
 
@@ -31,21 +31,16 @@ Console Script → Web Application → AI Chatbot → Kubernetes → Cloud Produ
 
 ## 🎯 Project Highlights
 
-### **✅ Completed (Phase 1 & 2)**
+### **✅ Completed Phases (1, 2, 3)**
 
 - ✅ **Phase 1**: Console todo app with in-memory storage
-- ✅ **Phase 2**: Full-stack web application
-  - Next.js 16 frontend with responsive UI
-  - FastAPI backend with RESTful APIs
-  - Custom JWT authentication
-  - PostgreSQL database (Neon)
-  - Deployed on Vercel + Railway
+- ✅ **Phase 2**: Full-stack web application with JWT auth, PostgreSQL, deployed on Vercel
+- ✅ **Phase 3**: AI-powered chatbot with OpenAI Agents SDK, MCP tools, and natural language interface
 
-### **🚧 In Progress (Phase 3-5)**
+### **📋 Upcoming Phases (4, 5)**
 
-- 📋 AI-powered chatbot with natural language
-- 📋 Kubernetes deployment
-- 📋 Cloud-native production system
+- 📋 **Phase 4**: Kubernetes containerized deployment
+- 📋 **Phase 5**: Cloud-native production system with event-driven architecture
 
 ---
 
@@ -69,17 +64,27 @@ Console Script → Web Application → AI Chatbot → Kubernetes → Cloud Produ
 └──────────┘     └──────────┘     └──────────┘
 ```
 
+### Phase 3: AI Chatbot
+```
+┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────┐
+│ ChatKit  │────▶│ FastAPI  │────▶│ OpenAI   │────▶│  Neon    │
+│   UI     │     │   Chat   │     │  Agent   │     │  DB      │
+│          │     │ Endpoint │     │ + MCP    │     │          │
+└──────────┘     └──────────┘     └──────────┘     └──────────┘
+```
+
 ---
 
 ## 🛠️ Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
-| **Frontend** | Next.js 16, TypeScript, Tailwind CSS |
-| **Backend** | FastAPI, SQLModel |
-| **Database** | Neon PostgreSQL |
-| **Authentication** | Custom JWT + bcrypt |
-| **Deployment** | Vercel, Railway |
+| **Frontend** | Next.js 16, React 19, TypeScript, Tailwind CSS |
+| **Backend** | FastAPI, Python 3.13, SQLModel |
+| **Database** | Neon PostgreSQL (Serverless) |
+| **Authentication** | Custom JWT + Argon2 |
+| **AI/ML** | OpenAI Agents SDK, MCP Protocol, ChatKit |
+| **Deployment** | Vercel, Railway, Hugging Face |
 | **Development** | Claude Code (Spec-Driven) |
 
 ---
@@ -107,29 +112,50 @@ pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 
+### Phase 3: AI Chatbot
+```bash
+cd phase-3-ai-chatbot
+
+# Frontend
+cd frontend
+npm install
+npm run dev
+
+# Backend
+cd backend
+pip install -e .
+alembic upgrade head
+uvicorn src.main:app --reload
+```
+
 **See individual phase README files for detailed setup.**
 
 ---
 
 ## 📚 Documentation
 
+### Phase READMEs
 - **[Phase 1 README](./phase-1-console/README.md)** - Console app setup
 - **[Phase 2 README](./phase-2-fullstack/README.md)** - Web app setup
-- **[Specifications](./specs/)** - Feature specs & technical plans
-- **[AGENTS.md](./AGENTS.md)** - AI agent instructions
+- **[Phase 3 README](./phase-3-ai-chatbot/README.md)** - AI chatbot setup
+
+### Specifications & Plans
+- **[Phase 1 Specs](./phase-1-console/specs/todo-app/)** - Console app specifications
+- **[Phase 2 Specs](./phase-2-fullstack/specs/001-task-crud-auth/)** - Full-stack web app specifications
+- **[Phase 3 Specs](./phase-3-ai-chatbot/specs/)** - AI chatbot specifications (3 features)
+
+### Architecture Decisions
+- **[Phase 3 ADRs](./phase-3-ai-chatbot/history/adr/)** - Architecture Decision Records
 
 ---
 
 ## 🎓 Development Approach
 
-This project follows **Spec-Driven Development (SDD)**:
+This project follows **Spec-Driven Development (SDD)** using Claude Code:
 
-1. **Specify** - Write clear requirements
-2. **Plan** - Design technical approach
-3. **Task** - Break into actionable items
-4. **Implement** - Build with Claude Code
+1. **Specify** → 2. **Plan** → 3. **Task** → 4. **Implement**
 
-All phases are built using this methodology with zero manual coding.
+All phases built with AI-assisted development and zero manual coding.
 
 ---
 
@@ -145,17 +171,11 @@ All phases are built using this methodology with zero manual coding.
 ## 📊 Project Status
 
 - **Total Phases**: 5
-- **Completed**: 2/5 (40%)
-- **In Progress**: Phase 3
-- **Lines of Code**: ~3,000+
-- **Deployment**: 2 live applications
-
----
-
-## 📹 Demo Videos
-
-- [Phase 1: Console App](https://youtube.com/watch?v=...) *(coming soon)*
-- [Phase 2: Web Application](https://youtube.com/watch?v=...) *(coming soon)*
+- **Completed**: 3/5 (60%)
+- **Next Up**: Phase 4 (Kubernetes)
+- **Lines of Code**: ~5,000+
+- **Live Deployments**: Phase 2 on Vercel
+- **AI Features**: 5 MCP tools, conversational interface, stateless agent
 
 ---
 
