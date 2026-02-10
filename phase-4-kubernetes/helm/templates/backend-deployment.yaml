@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "todo-app.fullname" . }}-backend
+  labels:
+    {{- include "todo-app.backend.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.backend.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "todo-app.backend.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "todo-app.backend.selectorLabels" . | nindent 8 }}
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+      containers:
+      - name: backend
+        image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+        imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
+        ports:
+        - name: http
+          containerPort: 8000
+          protocol: TCP
+        env:
+        - name: ENVIRONMENT
+          value: {{ .Values.backend.env.ENVIRONMENT | quote }}
+        - name: LOG_LEVEL
+          value: {{ .Values.backend.env.LOG_LEVEL | quote }}
+        - name: PYTHONUNBUFFERED
+          value: {{ .Values.backend.env.PYTHONUNBUFFERED | default "1" | quote }}
+        - name: JWT_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: todo-app-secrets
+              key: JWT_SECRET_KEY
+        - name: JWT_ALGORITHM
+          valueFrom:
+            secretKeyRef:
+              name: todo-app-secrets
+              key: JWT_ALGORITHM
+        - name: ACCESS_TOKEN_EXPIRE_DAYS
+          valueFrom:
+            secretKeyRef:
+              name: todo-app-secrets
+              key: ACCESS_TOKEN_EXPIRE_DAYS
+        - name: UV_ENVIRONMENT
+          valueFrom:
+            secretKeyRef:
+              name: todo-app-secrets
+              key: UV_ENVIRONMENT
+        - name: OPENROUTER_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: todo-app-secrets
+              key: OPENROUTER_API_KEY
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: todo-app-secrets
+              key: DATABASE_URL
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: {{ .Values.healthCheck.livenessProbe.initialDelaySeconds | default 30 }}
+          periodSeconds: {{ .Values.healthCheck.livenessProbe.periodSeconds | default 10 }}
+          timeoutSeconds: {{ .Values.healthCheck.livenessProbe.timeoutSeconds | default 5 }}
+          failureThreshold: {{ .Values.healthCheck.livenessProbe.failureThreshold | default 3 }}
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: {{ .Values.healthCheck.readinessProbe.initialDelaySeconds | default 10 }}
+          periodSeconds: {{ .Values.healthCheck.readinessProbe.periodSeconds | default 5 }}
+          timeoutSeconds: {{ .Values.healthCheck.readinessProbe.timeoutSeconds | default 3 }}
+          failureThreshold: {{ .Values.healthCheck.readinessProbe.failureThreshold | default 3 }}
+        resources:
+          {{- toYaml .Values.backend.resources | nindent 10 }}
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+          runAsNonRoot: true
+          runAsUser: 1001

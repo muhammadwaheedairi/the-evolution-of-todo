@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "todo-app.fullname" . }}-frontend
+  labels:
+    {{- include "todo-app.frontend.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.frontend.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "todo-app.frontend.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "todo-app.frontend.selectorLabels" . | nindent 8 }}
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+      containers:
+      - name: frontend
+        image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}"
+        imagePullPolicy: {{ .Values.frontend.image.pullPolicy }}
+        ports:
+        - name: http
+          containerPort: 3000
+          protocol: TCP
+        env:
+        - name: NEXT_PUBLIC_API_URL
+          value: {{ .Values.frontend.env.NEXT_PUBLIC_API_URL | quote }}
+        - name: NODE_ENV
+          value: {{ .Values.frontend.env.NODE_ENV | default "production" | quote }}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: {{ .Values.healthCheck.livenessProbe.initialDelaySeconds | default 30 }}
+          periodSeconds: {{ .Values.healthCheck.livenessProbe.periodSeconds | default 10 }}
+          timeoutSeconds: {{ .Values.healthCheck.livenessProbe.timeoutSeconds | default 5 }}
+          failureThreshold: {{ .Values.healthCheck.livenessProbe.failureThreshold | default 3 }}
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: http
+          initialDelaySeconds: {{ .Values.healthCheck.readinessProbe.initialDelaySeconds | default 10 }}
+          periodSeconds: {{ .Values.healthCheck.readinessProbe.periodSeconds | default 5 }}
+          timeoutSeconds: {{ .Values.healthCheck.readinessProbe.timeoutSeconds | default 3 }}
+          failureThreshold: {{ .Values.healthCheck.readinessProbe.failureThreshold | default 3 }}
+        resources:
+          {{- toYaml .Values.frontend.resources | nindent 10 }}
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+          runAsNonRoot: true
+          runAsUser: 1001

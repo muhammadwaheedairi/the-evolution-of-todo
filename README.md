@@ -24,22 +24,22 @@ Console Script → Web Application → AI Chatbot → Kubernetes → Cloud Produ
 | **[Phase 1: Console](./phase-1-console/)** | In-memory Python CLI | ✅ Complete | - |
 | **[Phase 2: Full-Stack](./phase-2-fullstack/)** | Multi-user web app | ✅ Complete | [View →](https://the-evolution-of-todo-sandy.vercel.app/) |
 | **[Phase 3: AI Chatbot](./phase-3-ai-chatbot/)** | AI-powered task management | ✅ Complete | [View →](https://the-evolution-of-todo-dun.vercel.app/) |
-| **[Phase 4: Kubernetes](./phase-4-kubernetes/)** | Containerized deployment | 📋 Planned | Local (Minikube) |
+| **[Phase 4: Kubernetes](./phase-4-kubernetes/)** | Containerized orchestration | ✅ Complete | Local (Minikube) |
 | **[Phase 5: Cloud Native](./phase-5-cloud/)** | Event-driven production | 📋 Planned | Azure/GCP |
 
 ---
 
 ## 🎯 Project Highlights
 
-### **✅ Completed Phases (1, 2, 3)**
+### **✅ Completed Phases (1, 2, 3, 4)**
 
 - ✅ **Phase 1**: Console todo app with in-memory storage
 - ✅ **Phase 2**: Full-stack web application with JWT auth, PostgreSQL, deployed on Vercel
 - ✅ **Phase 3**: AI-powered chatbot with OpenAI Agents SDK, MCP tools, and natural language interface
+- ✅ **Phase 4**: Kubernetes deployment with Docker containers, Helm charts, and automated orchestration
 
-### **📋 Upcoming Phases (4, 5)**
+### **📋 Upcoming Phases (5)**
 
-- 📋 **Phase 4**: Kubernetes containerized deployment
 - 📋 **Phase 5**: Cloud-native production system with event-driven architecture
 
 ---
@@ -73,6 +73,25 @@ Console Script → Web Application → AI Chatbot → Kubernetes → Cloud Produ
 └──────────┘     └──────────┘     └──────────┘     └──────────┘
 ```
 
+### Phase 4: Kubernetes
+```
+┌─────────────────────────────────────────────────────┐
+│              Minikube Cluster                       │
+│  ┌──────────────┐         ┌──────────────┐        │
+│  │  Frontend    │         │   Backend    │        │
+│  │  Pods (x2)   │────────▶│   Pods (x2)  │───┐    │
+│  │  NodePort    │         │  ClusterIP   │   │    │
+│  └──────────────┘         └──────────────┘   │    │
+│       :30000                                  │    │
+└───────────────────────────────────────────────┼────┘
+                                                │
+                                                ▼
+                                          ┌──────────┐
+                                          │  Neon    │
+                                          │  DB      │
+                                          └──────────┘
+```
+
 ---
 
 ## 🛠️ Tech Stack
@@ -84,7 +103,9 @@ Console Script → Web Application → AI Chatbot → Kubernetes → Cloud Produ
 | **Database** | Neon PostgreSQL (Serverless) |
 | **Authentication** | Custom JWT + Argon2 |
 | **AI/ML** | OpenAI Agents SDK, MCP Protocol, ChatKit |
-| **Deployment** | Vercel, Railway, Hugging Face |
+| **Containerization** | Docker, Multi-stage builds |
+| **Orchestration** | Kubernetes, Helm 3, Minikube |
+| **Deployment** | Vercel, Railway, Kubernetes (Local) |
 | **Development** | Claude Code (Spec-Driven) |
 
 ---
@@ -128,6 +149,21 @@ alembic upgrade head
 uvicorn src.main:app --reload
 ```
 
+### Phase 4: Kubernetes
+```bash
+cd phase-4-kubernetes
+
+# Prerequisites: Docker, Minikube, kubectl, Helm
+# Verify environment
+./scripts/verify-environment.sh
+
+# One-command deployment
+./scripts/deploy-local.sh
+
+# Access application
+minikube service frontend-service --url
+```
+
 **See individual phase README files for detailed setup.**
 
 ---
@@ -138,14 +174,17 @@ uvicorn src.main:app --reload
 - **[Phase 1 README](./phase-1-console/README.md)** - Console app setup
 - **[Phase 2 README](./phase-2-fullstack/README.md)** - Web app setup
 - **[Phase 3 README](./phase-3-ai-chatbot/README.md)** - AI chatbot setup
+- **[Phase 4 README](./phase-4-kubernetes/README.md)** - Kubernetes deployment setup
 
 ### Specifications & Plans
 - **[Phase 1 Specs](./phase-1-console/specs/todo-app/)** - Console app specifications
 - **[Phase 2 Specs](./phase-2-fullstack/specs/001-task-crud-auth/)** - Full-stack web app specifications
 - **[Phase 3 Specs](./phase-3-ai-chatbot/specs/)** - AI chatbot specifications (3 features)
+- **[Phase 4 Specs](./phase-4-kubernetes/specs/004-local-k8s-deployment/)** - Kubernetes deployment specifications
 
 ### Architecture Decisions
 - **[Phase 3 ADRs](./phase-3-ai-chatbot/history/adr/)** - Architecture Decision Records
+- **[Phase 4 ADRs](./phase-4-kubernetes/history/adr/)** - Kubernetes architecture decisions
 
 ---
 
@@ -171,10 +210,12 @@ All phases built with AI-assisted development and zero manual coding.
 ## 📊 Project Status
 
 - **Total Phases**: 5
-- **Completed**: 3/5 (60%)
-- **Next Up**: Phase 4 (Kubernetes)
-- **Lines of Code**: ~5,000+
-- **Live Deployments**: Phase 2 & Phase 3 on Vercel
+- **Completed**: 4/5 (80%)
+- **Next Up**: Phase 5 (Cloud Native)
+- **Lines of Code**: ~6,000+
+- **Live Deployments**: Phase 2 & Phase 3 on Vercel, Phase 4 on Minikube
+- **Container Images**: 2 (Frontend + Backend)
+- **Kubernetes Resources**: 6 (Deployments, Services, ConfigMaps, Secrets)
 - **AI Features**: 5 MCP tools, conversational interface, stateless agent
 
 ---

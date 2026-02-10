@@ -1,0 +1,66 @@
+# Development values for todo-app
+# This file overrides values.yaml for local Minikube deployment
+
+# Frontend configuration
+frontend:
+  replicaCount: 1
+  image:
+    repository: todo-frontend
+    tag: latest
+    pullPolicy: Never  # Use local images, don't pull from registry
+  service:
+    type: NodePort
+    port: 3000
+    nodePort: 30000  # Fixed port for easy access
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "250m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+  env:
+    NEXT_PUBLIC_API_URL: "http://backend-service:8000"
+    NODE_ENV: "production"
+
+# Backend configuration
+backend:
+  replicaCount: 1
+  image:
+    repository: todo-backend
+    tag: latest
+    pullPolicy: Never  # Use local images, don't pull from registry
+  service:
+    type: ClusterIP
+    port: 8000
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "250m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+  env:
+    ENVIRONMENT: "development"
+    LOG_LEVEL: "debug"
+    PYTHONUNBUFFERED: "1"
+
+# Secrets (override with actual values via --set or create Secret manually)
+secrets:
+  jwtSecret: ""  # Set via: kubectl create secret
+  openaiApiKey: ""  # Set via: kubectl create secret
+  databaseUrl: ""  # Set via: kubectl create secret
+
+# Health check configuration
+healthCheck:
+  enabled: true
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readinessProbe:
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3

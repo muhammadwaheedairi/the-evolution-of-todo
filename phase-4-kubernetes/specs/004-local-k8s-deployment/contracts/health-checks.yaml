@@ -1,0 +1,94 @@
+openapi: 3.0.0
+info:
+  title: Health Check Endpoints
+  version: 1.0.0
+  description: Health check endpoints for Kubernetes liveness and readiness probes
+
+paths:
+  /health:
+    get:
+      summary: Liveness probe endpoint
+      description: |
+        Returns 200 if the service process is alive and running.
+        Used by Kubernetes liveness probe to determine if the pod should be restarted.
+        This is a simple check that doesn't verify external dependencies.
+      operationId: getHealth
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Service is alive
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [healthy]
+                    example: "healthy"
+                required:
+                  - status
+
+  /ready:
+    get:
+      summary: Readiness probe endpoint
+      description: |
+        Returns 200 if the service is ready to accept traffic.
+        Used by Kubernetes readiness probe to determine if the pod should receive requests.
+        This check verifies external dependencies (database connection for backend).
+      operationId: getReady
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Service is ready to accept traffic
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [ready]
+                    example: "ready"
+                  database:
+                    type: string
+                    enum: [connected]
+                    example: "connected"
+                    description: Database connection status (backend only)
+                required:
+                  - status
+        '503':
+          description: Service is not ready (dependencies unavailable)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    example: "Database unavailable"
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy]
+      required:
+        - status
+
+    ReadyResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ready]
+        database:
+          type: string
+          enum: [connected]
+      required:
+        - status

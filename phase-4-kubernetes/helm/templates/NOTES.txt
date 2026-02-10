@@ -1,0 +1,57 @@
+🎉 Todo AI Chatbot has been deployed!
+
+Your release is named: {{ .Release.Name }}
+Namespace: {{ .Release.Namespace }}
+
+📋 NEXT STEPS:
+
+1. Check pod status:
+   kubectl get pods -n {{ .Release.Namespace }}
+
+   Wait for all pods to show "Running" status (may take 30-60 seconds)
+
+2. Get the application URL:
+   {{- if eq .Values.frontend.service.type "NodePort" }}
+
+   export MINIKUBE_IP=$(minikube ip)
+   export NODE_PORT={{ .Values.frontend.service.nodePort }}
+   echo "Application URL: http://$MINIKUBE_IP:$NODE_PORT"
+
+   Or simply run:
+   minikube service {{ include "todo-app.fullname" . }}-frontend -n {{ .Release.Namespace }}
+   {{- else }}
+
+   kubectl port-forward -n {{ .Release.Namespace }} service/{{ include "todo-app.fullname" . }}-frontend 3000:3000
+
+   Then access: http://localhost:3000
+   {{- end }}
+
+3. View logs:
+   # Frontend logs
+   kubectl logs -n {{ .Release.Namespace }} deployment/{{ include "todo-app.fullname" . }}-frontend --tail=50
+
+   # Backend logs
+   kubectl logs -n {{ .Release.Namespace }} deployment/{{ include "todo-app.fullname" . }}-backend --tail=50
+
+4. Monitor resources:
+   kubectl top pods -n {{ .Release.Namespace }}
+
+🔧 TROUBLESHOOTING:
+
+If pods are not starting:
+- Check pod status: kubectl describe pod <pod-name> -n {{ .Release.Namespace }}
+- Verify secrets exist: kubectl get secrets -n {{ .Release.Namespace }}
+- Check events: kubectl get events -n {{ .Release.Namespace }} --sort-by='.lastTimestamp'
+
+If images are not found:
+- Ensure Docker environment is set: eval $(minikube docker-env)
+- Rebuild images in the Minikube Docker daemon
+- Verify imagePullPolicy is set to "Never" in values-dev.yaml
+
+📚 DOCUMENTATION:
+
+- Deployment guide: helm/README.md
+- Quickstart guide: specs/004-local-k8s-deployment/quickstart.md
+- Troubleshooting: docs/deployment/troubleshooting.md
+
+🚀 Happy deploying!

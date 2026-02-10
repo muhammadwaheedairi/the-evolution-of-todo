@@ -1,0 +1,64 @@
+# Default values for todo-app
+# This is a YAML-formatted file.
+
+# Frontend configuration
+frontend:
+  replicaCount: 2
+  image:
+    repository: todo-frontend
+    tag: latest
+    pullPolicy: Never
+  service:
+    type: NodePort
+    port: 3000
+    nodePort: 30000
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "250m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+  env:
+    NEXT_PUBLIC_API_URL: "http://backend-service:8000"
+
+# Backend configuration
+backend:
+  replicaCount: 2
+  image:
+    repository: todo-backend
+    tag: latest
+    pullPolicy: Never
+  service:
+    type: ClusterIP
+    port: 8000
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "250m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+  env:
+    ENVIRONMENT: "production"
+    LOG_LEVEL: "info"
+
+# Secrets (values should be provided via --set or separate values file)
+secrets:
+  jwtSecret: ""
+  openrouterApiKey: ""  # ✅ Changed: openaiApiKey → openrouterApiKey
+  databaseUrl: ""
+
+# Health check configuration
+healthCheck:
+  enabled: true
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readinessProbe:
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3

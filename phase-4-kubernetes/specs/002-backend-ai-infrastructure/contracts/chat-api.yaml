@@ -1,0 +1,126 @@
+openapi: 3.0.0
+info:
+  title: Todo AI Chatbot API
+  version: 1.0.0
+  description: API for AI-powered chatbot functionality in the Todo app
+
+paths:
+  /api/{user_id}/chat:
+    post:
+      summary: Send message and receive AI response
+      description: Send a natural language message and receive an AI-generated response. The AI agent can perform task operations based on the message content.
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: UUID of the authenticated user
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatRequest'
+      responses:
+        '200':
+          description: Successful response from the AI agent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatResponse'
+        '400':
+          description: Bad request - invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - invalid or missing JWT token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not found - user_id does not match authenticated user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - BearerAuth: []
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ChatRequest:
+      type: object
+      properties:
+        conversation_id:
+          type: integer
+          description: Optional conversation ID. If not provided, a new conversation will be created.
+          nullable: true
+        message:
+          type: string
+          description: Natural language message from the user
+          minLength: 1
+          maxLength: 1000
+      required:
+        - message
+      example:
+        conversation_id: 123
+        message: "Add a task to buy groceries"
+
+    ChatResponse:
+      type: object
+      properties:
+        conversation_id:
+          type: integer
+          description: ID of the conversation (either provided or newly created)
+        response:
+          type: string
+          description: AI-generated response to the user's message
+        tool_calls:
+          type: array
+          items:
+            type: string
+          description: List of MCP tools that were executed
+      required:
+        - conversation_id
+        - response
+        - tool_calls
+      example:
+        conversation_id: 123
+        response: "I've added 'Buy groceries' to your task list."
+        tool_calls: ["add_task"]
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+        code:
+          type: string
+          description: Error code
+      required:
+        - error
+        - code
+      example:
+        error: "Invalid user ID"
+        code: "INVALID_USER_ID"
+
+security:
+  - BearerAuth: []

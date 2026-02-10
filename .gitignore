@@ -119,8 +119,23 @@ db.sqlite3-journal
 # Docker / Kubernetes
 ############################
 .dockerignore
+
+# Kubernetes secrets
 *.kubeconfig
+kubeconfig
 secrets.yaml
+*-secret.yaml
+*.secret.yaml
+values-secrets.yaml
+secrets.values.yaml
+
+# Kubernetes certificates
+*.crt
+*.key
+
+# Helm secrets
+secrets/
+.secrets/
 
 ############################
 # Misc / Runtime
