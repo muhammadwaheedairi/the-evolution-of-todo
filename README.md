@@ -499,7 +499,7 @@ MIT License - See [LICENSE](./LICENSE) file
 
 **Muhammad Waheed**
 - GitHub: [@muhammadwaheedairi](https://github.com/muhammadwaheedairi)
-- Email: wm0297567@gmail.com
+- Email: muhammadwaheedairi@gmail.com
 - WhatsApp: 03180297567
 
 ---
