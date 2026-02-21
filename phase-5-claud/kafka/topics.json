@@ -1,0 +1,34 @@
+{
+  "topics": [
+    {
+      "name": "task-events",
+      "partitions": 3,
+      "replicationFactor": 1,
+      "config": {
+        "retention.ms": "604800000",
+        "cleanup.policy": "delete"
+      },
+      "description": "All task CRUD operations (created, updated, completed, deleted)"
+    },
+    {
+      "name": "reminders",
+      "partitions": 2,
+      "replicationFactor": 1,
+      "config": {
+        "retention.ms": "86400000",
+        "cleanup.policy": "delete"
+      },
+      "description": "Task reminder events for notification service"
+    },
+    {
+      "name": "task-updates",
+      "partitions": 2,
+      "replicationFactor": 1,
+      "config": {
+        "retention.ms": "3600000",
+        "cleanup.policy": "delete"
+      },
+      "description": "Real-time task updates for WebSocket broadcasting"
+    }
+  ]
+}

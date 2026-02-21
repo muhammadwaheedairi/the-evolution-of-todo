@@ -1,0 +1,73 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  labels:
+    app: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "backend"
+        dapr.io/app-port: "8000"
+        dapr.io/log-level: "info"
+    spec:
+      containers:
+      - name: backend
+        image: taskflow-backend:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: taskflow-secrets
+              key: database-url
+        - name: JWT_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: taskflow-secrets
+              key: jwt-secret
+        - name: OPENROUTER_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: taskflow-secrets
+              key: openrouter-api-key
+        - name: KAFKA_BOOTSTRAP_SERVERS
+          value: "taskflow-redpanda:9092"
+        - name: KAFKA_ENABLED
+          value: "true"
+        - name: INTERNAL_SECRET
+          value: "internal-service-secret-2026"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+  labels:
+    app: backend
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8000
+    targetPort: 8000
+    protocol: TCP
+    name: http
+  selector:
+    app: backend

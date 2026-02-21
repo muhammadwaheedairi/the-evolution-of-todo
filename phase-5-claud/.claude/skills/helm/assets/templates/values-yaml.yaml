@@ -1,0 +1,149 @@
+# Default values for {{CHART_NAME}}
+# Declare variables to be passed into templates
+
+# -- Number of replicas
+replicaCount: 2
+
+image:
+  # -- Container image repository
+  repository: {{IMAGE_REPOSITORY}}
+  # -- Image pull policy
+  pullPolicy: IfNotPresent
+  # -- Image tag (defaults to appVersion)
+  tag: ""
+
+# -- Image pull secrets
+imagePullSecrets: []
+  # - name: regcred
+
+# -- Override chart name
+nameOverride: ""
+# -- Override full name
+fullnameOverride: ""
+
+serviceAccount:
+  # -- Create service account
+  create: true
+  # -- Service account annotations
+  annotations: {}
+  # -- Service account name (auto-generated if empty)
+  name: ""
+
+# -- Pod annotations
+podAnnotations: {}
+
+# -- Pod labels
+podLabels: {}
+
+# -- Pod security context
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+
+# -- Container security context
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+service:
+  # -- Service type
+  type: ClusterIP
+  # -- Service port
+  port: 80
+  # -- Target port on container
+  targetPort: 8080
+
+ingress:
+  # -- Enable ingress
+  enabled: false
+  # -- Ingress class name
+  className: ""
+  # -- Ingress annotations
+  annotations: {}
+  # -- Ingress hosts
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  # -- Ingress TLS configuration
+  tls: []
+
+# -- Resource requests and limits
+resources:
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+  limits:
+    cpu: "500m"
+    memory: "512Mi"
+
+# -- Liveness probe configuration
+livenessProbe:
+  httpGet:
+    path: /health/live
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 15
+  failureThreshold: 3
+
+# -- Readiness probe configuration
+readinessProbe:
+  httpGet:
+    path: /health/ready
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 10
+
+# -- Startup probe for slow-starting apps
+startupProbe:
+  httpGet:
+    path: /health/live
+    port: http
+  initialDelaySeconds: 0
+  periodSeconds: 10
+  failureThreshold: 30
+
+autoscaling:
+  # -- Enable HPA
+  enabled: false
+  # -- Minimum replicas
+  minReplicas: 2
+  # -- Maximum replicas
+  maxReplicas: 10
+  # -- Target CPU utilization
+  targetCPUUtilizationPercentage: 80
+  # -- Target memory utilization
+  # targetMemoryUtilizationPercentage: 80
+
+# -- Node selector
+nodeSelector: {}
+
+# -- Tolerations
+tolerations: []
+
+# -- Affinity rules
+affinity: {}
+
+# -- Additional environment variables
+env: []
+  # - name: LOG_LEVEL
+  #   value: "info"
+
+# -- Environment variables from secrets/configmaps
+envFrom: []
+  # - secretRef:
+  #     name: my-secret
+
+# -- Additional volumes
+volumes: []
+
+# -- Additional volume mounts
+volumeMounts: []

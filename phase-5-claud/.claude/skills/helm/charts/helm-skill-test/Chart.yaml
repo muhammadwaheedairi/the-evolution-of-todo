@@ -1,0 +1,12 @@
+apiVersion: v2
+name: helm-skill-test
+version: 0.1.0
+appVersion: "1.0.0"
+type: application
+description: |
+  Test chart for Helm skill validation.
+  Follows security-first patterns from SKILL.md.
+kubeVersion: ">=1.25.0"
+maintainers:
+  - name: DevRaftel
+    email: team@devraftel.com

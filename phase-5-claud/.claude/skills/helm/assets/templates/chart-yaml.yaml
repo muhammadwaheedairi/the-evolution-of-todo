@@ -1,0 +1,38 @@
+# Helm Chart Template
+# Replace {{PLACEHOLDERS}} with actual values
+
+apiVersion: v2
+name: {{CHART_NAME}}
+version: {{CHART_VERSION}}
+appVersion: "{{APP_VERSION}}"
+type: application  # or: library
+description: |
+  {{CHART_DESCRIPTION}}
+
+# Kubernetes version constraint
+kubeVersion: ">=1.25.0"
+
+# Chart dependencies
+dependencies: []
+  # - name: postgresql
+  #   version: "12.x.x"
+  #   repository: "oci://registry-1.docker.io/bitnamicharts"
+  #   condition: postgresql.enabled
+
+# Maintainers
+maintainers:
+  - name: {{MAINTAINER_NAME}}
+    email: {{MAINTAINER_EMAIL}}
+
+# Keywords for search
+keywords:
+  - {{KEYWORD_1}}
+  - {{KEYWORD_2}}
+
+# Optional: home page and sources
+# home: https://example.com
+# sources:
+#   - https://github.com/org/repo
+
+# Optional: icon URL
+# icon: https://example.com/icon.png

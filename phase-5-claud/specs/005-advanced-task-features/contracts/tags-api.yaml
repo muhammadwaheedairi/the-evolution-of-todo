@@ -1,0 +1,82 @@
+openapi: 3.0.3
+info:
+  title: Todo Tags API
+  description: API for managing and retrieving user tags
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000
+    description: Local development
+  - url: https://api.todo-app.example.com
+    description: Production
+
+paths:
+  /api/{user_id}/tags:
+    get:
+      summary: List all user tags
+      description: Retrieve all unique tags used by the user across all tasks
+      operationId: listTags
+      tags:
+        - Tags
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: User ID (must match authenticated user)
+      responses:
+        '200':
+          description: List of unique tags
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tags:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          description: Tag name
+                          example: "work"
+                        count:
+                          type: integer
+                          description: Number of tasks with this tag
+                          example: 15
+                    example:
+                      - name: "work"
+                        count: 15
+                      - name: "urgent"
+                        count: 8
+                      - name: "personal"
+                        count: 12
+                  total:
+                    type: integer
+                    description: Total number of unique tags
+                    example: 3
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid authentication
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              detail:
+                type: string
+                example: "Not authenticated"

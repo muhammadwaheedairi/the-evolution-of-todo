@@ -25,7 +25,7 @@ Console Script → Web Application → AI Chatbot → Kubernetes → Cloud Produ
 | **[Phase 2: Full-Stack](./phase-2-fullstack/)** | Multi-user web app | ✅ Complete | [View →](https://the-evolution-of-todo-sandy.vercel.app/) |
 | **[Phase 3: AI Chatbot](./phase-3-ai-chatbot/)** | AI-powered task management | ✅ Complete | [View →](https://the-evolution-of-todo-dun.vercel.app/) |
 | **[Phase 4: Kubernetes](./phase-4-kubernetes/)** | Containerized orchestration | ✅ Complete | Local (Minikube) |
-| **[Phase 5: Cloud Native](./phase-5-cloud/)** | Event-driven microservices | ✅ Complete | Local (Minikube + Kafka) |
+| **[Phase 5: Cloud Native](./phase-5-claud/)** | Event-driven microservices | ✅ Complete | Local (Minikube + Kafka) |
 
 ---
 
@@ -429,14 +429,14 @@ open http://taskflow.local
 - **[Phase 2 README](./phase-2-fullstack/README.md)** - Web app setup
 - **[Phase 3 README](./phase-3-ai-chatbot/README.md)** - AI chatbot setup
 - **[Phase 4 README](./phase-4-kubernetes/README.md)** - Kubernetes deployment setup
-- **[Phase 5 README](./phase-5-cloud/README.md)** - Cloud-native microservices setup
+- **[Phase 5 README](./phase-5-claud/README.md)** - Cloud-native microservices setup
 
 ### Specifications & Plans
 - **[Phase 1 Specs](./phase-1-console/specs/todo-app/)** - Console app specifications
 - **[Phase 2 Specs](./phase-2-fullstack/specs/001-task-crud-auth/)** - Full-stack web app specifications
 - **[Phase 3 Specs](./phase-3-ai-chatbot/specs/)** - AI chatbot specifications (3 features)
 - **[Phase 4 Specs](./phase-4-kubernetes/specs/004-local-k8s-deployment/)** - Kubernetes deployment specifications
-- **[Phase 5 Specs](./phase-5-cloud/specs/)** - Event-driven microservices specifications
+- **[Phase 5 Specs](./phase-5-claud/specs/)** - Event-driven microservices specifications
 
 ### Architecture Decisions
 - **[Phase 3 ADRs](./phase-3-ai-chatbot/history/adr/)** - Architecture Decision Records

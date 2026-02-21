@@ -1,0 +1,50 @@
+# -- Number of replicas
+replicaCount: 1
+
+image:
+  # -- Container image repository
+  repository: nginxinc/nginx-unprivileged
+  # -- Image pull policy
+  pullPolicy: IfNotPresent
+  # -- Image tag
+  tag: "alpine"
+
+# -- Resource requests and limits
+resources:
+  requests:
+    cpu: "50m"
+    memory: "64Mi"
+  limits:
+    cpu: "100m"
+    memory: "128Mi"
+
+# -- Security context (pod level)
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+
+# -- Security context (container level)
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: ["ALL"]
+
+# -- Service configuration
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+# -- Health probes
+probes:
+  liveness:
+    path: /
+    initialDelaySeconds: 5
+  readiness:
+    path: /
+    initialDelaySeconds: 3

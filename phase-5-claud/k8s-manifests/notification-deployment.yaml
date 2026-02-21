@@ -1,0 +1,75 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-service
+  labels:
+    app: notification-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notification-service
+  template:
+    metadata:
+      labels:
+        app: notification-service
+    spec:
+      containers:
+      - name: notification-service
+        image: taskflow-notification:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8002
+        env:
+        - name: KAFKA_BOOTSTRAP_SERVERS
+          value: "taskflow-redpanda.default.svc.cluster.local:9092"
+        - name: KAFKA_GROUP_ID
+          value: "notification-service"
+        - name: BACKEND_URL
+          value: "http://backend-service:8000"
+        - name: INTERNAL_SECRET
+          value: "internal-service-secret-2026"
+        - name: SMTP_HOST
+          value: "smtp.gmail.com"
+        - name: SMTP_PORT
+          value: "587"
+        - name: SMTP_USER
+          valueFrom:
+            secretKeyRef:
+              name: taskflow-secrets
+              key: smtp-user
+              optional: true
+        - name: SMTP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: taskflow-secrets
+              key: smtp-password
+              optional: true
+        - name: SMTP_FROM_EMAIL
+          value: "taskflow.reminders@gmail.com"
+        - name: SMTP_FROM_NAME
+          value: "TaskFlow Reminders"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-service
+  labels:
+    app: notification-service
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8002
+    targetPort: 8002
+    protocol: TCP
+    name: http
+  selector:
+    app: notification-service
