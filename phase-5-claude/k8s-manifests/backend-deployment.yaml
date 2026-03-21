@@ -48,6 +48,24 @@ spec:
           value: "true"
         - name: INTERNAL_SECRET
           value: "internal-service-secret-2026"
+        - name: SMTP_HOST
+          value: "smtp.gmail.com"
+        - name: SMTP_PORT
+          value: "587"
+        - name: SMTP_USER
+          valueFrom:
+            secretKeyRef:
+              name: taskflow-secrets
+              key: smtp-user
+        - name: SMTP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: taskflow-secrets
+              key: smtp-password
+        - name: SMTP_FROM_EMAIL
+          value: "taskflow.reminders@gmail.com"
+        - name: SMTP_FROM_NAME
+          value: "TaskFlow Reminders"
         resources:
           requests:
             memory: "256Mi"

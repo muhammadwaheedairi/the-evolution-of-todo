@@ -12,8 +12,8 @@ RUN pip install --no-cache-dir --upgrade pip && \
     --use-deprecated=legacy-resolver \
     -e .
 
-# Install aiokafka for Phase 5
-RUN pip install --no-cache-dir aiokafka python-socketio python-engineio aiohttp httpx
+# Install additional packages for Phase 5
+RUN pip install --no-cache-dir aiokafka python-socketio python-engineio aiohttp httpx apscheduler aiosmtplib
 
 # Runtime stage
 FROM python:3.12-slim AS runner

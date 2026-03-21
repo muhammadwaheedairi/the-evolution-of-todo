@@ -26,9 +26,20 @@ class Settings(BaseSettings):
     KAFKA_BOOTSTRAP_SERVERS: str = "taskflow-redpanda:9092"
     KAFKA_ENABLED: bool = True
 
+    # Internal service settings
+    INTERNAL_SECRET: str = "internal-service-secret-2026"
+
+    # SMTP settings
+    SMTP_HOST: str = "smtp.gmail.com"
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_FROM_EMAIL: str = "taskflow.reminders@gmail.com"
+    SMTP_FROM_NAME: str = "TaskFlow Reminders"
+
     # App settings
     APP_NAME: str = "Todo AI Chatbot"
-    APP_VERSION: str = "0.3.0"  # Phase 5
+    APP_VERSION: str = "0.3.0"
     DEBUG: bool = False
     LOG_LEVEL: str = "INFO"
 
@@ -49,7 +60,7 @@ class Settings(BaseSettings):
     USERS_OPENAPI_TAG: str = "users"
     TASKS_OPENAPI_TAG: str = "tasks"
     AUTH_OPENAPI_TAG: str = "auth"
-    CHAT_OPENAPI_TAG: str = "chat"  # Phase 3
+    CHAT_OPENAPI_TAG: str = "chat"
 
     model_config = {
         "env_file": ".env",

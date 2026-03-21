@@ -1,4 +1,4 @@
-"""FastAPI application entry point."""
+="""FastAPI application entry point."""
 
 from contextlib import asynccontextmanager
 import logging
@@ -12,6 +12,8 @@ from .database import init_db
 from .routers import auth, tasks, chat, health, notifications, internal
 from .events.publisher import kafka_publisher
 from .events.websocket import socket_app
+from .events.consumer import start_kafka_consumer, stop_kafka_consumer
+from .events.scheduler import start_scheduler, stop_scheduler
 
 logging.basicConfig(
     level=logging.INFO,
@@ -27,11 +29,26 @@ async def lifespan(app: FastAPI):
     init_db()
 
     if settings.KAFKA_ENABLED:
+        # Kafka publisher
         try:
             await kafka_publisher.start()
             logger.info("✅ Kafka publisher started")
         except Exception as e:
             logger.warning(f"⚠️ Kafka publisher failed to start: {e}")
+
+        # Notification consumer (was separate notification-service)
+        try:
+            await start_kafka_consumer()
+            logger.info("✅ Kafka consumer started")
+        except Exception as e:
+            logger.warning(f"⚠️ Kafka consumer failed to start: {e}")
+
+        # Reminder scheduler (was separate reminder-service)
+        try:
+            await start_scheduler()
+            logger.info("✅ Reminder scheduler started")
+        except Exception as e:
+            logger.warning(f"⚠️ Reminder scheduler failed to start: {e}")
 
     yield
 
@@ -39,6 +56,10 @@ async def lifespan(app: FastAPI):
     if settings.KAFKA_ENABLED:
         await kafka_publisher.stop()
         logger.info("✅ Kafka publisher stopped")
+        await stop_kafka_consumer()
+        logger.info("✅ Kafka consumer stopped")
+        await stop_scheduler()
+        logger.info("✅ Reminder scheduler stopped")
 
 
 # ── INTERNAL SUB-APP ───────────────────────────────────────────────────

@@ -24,3 +24,15 @@ pydantic-settings==2.6.1
 
 # HTTP Client
 httpx==0.28.1
+
+# Kafka
+aiokafka==0.11.0
+
+# Scheduler
+apscheduler==3.10.4
+
+# Email
+aiosmtplib==3.0.2
+
+# Environment
+python-dotenv==1.0.1

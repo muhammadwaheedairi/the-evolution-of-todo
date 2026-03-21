@@ -1,6 +1,6 @@
 # TaskFlow - AI-Powered Task Management Platform
 
-Enterprise-grade task management system with AI chat interface, event-driven microservices, and cloud-native deployment.
+Enterprise-grade task management system with AI chat interface, event-driven architecture, and cloud-native deployment.
 
 ## Overview
 
@@ -11,12 +11,11 @@ TaskFlow is a full-stack application that combines traditional task management w
 - 📋 Advanced task features (priority, tags, due dates, recurring tasks)
 - 🔔 Real-time notifications via WebSocket
 - 📧 Email reminders for due tasks
-- 🎯 Event-driven microservices architecture
+- 🎯 Event-driven architecture with integrated services
 - ☸️ Kubernetes-ready with Dapr integration
 - 🔒 Secure JWT authentication with Argon2 password hashing
 
 ## Architecture
-
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                         User Browser                                 │
@@ -51,13 +50,14 @@ TaskFlow is a full-stack application that combines traditional task management w
 │  ┌──────────────────────────────────────────────────────────────┐  │
 │  │              Redpanda (Kafka-compatible)                      │  │
 │  │              Topics: task-events, reminders, task-updates     │  │
-│  └──────────┬────────────────────────────────────┬───────────────┘  │
-│             │                                    │                  │
-│             ▼                                    ▼                  │
-│  ┌──────────────────────┐            ┌──────────────────────┐      │
-│  │ Notification Service │            │  Reminder Service    │      │
-│  │ (Email + WebSocket)  │            │  (APScheduler)       │      │
-│  └──────────────────────┘            └──────────────────────┘      │
+│  └──────────────────────────┬─────────────────────────────────┘  │
+│                              │                                    │
+│                              ▼                                    │
+│  ┌──────────────────────────────────────────────────────────────┐  │
+│  │  Backend (Integrated)                                         │  │
+│  │  - Notification Consumer (WebSocket + Email)                  │  │
+│  │  - Reminder Scheduler (APScheduler)                           │  │
+│  └──────────────────────────────────────────────────────────────┘  │
 │                                                                      │
 └──────────────────────────────────────────────────────────────────────┘
                                 │
@@ -92,6 +92,8 @@ TaskFlow is a full-stack application that combines traditional task management w
 - **AI**: OpenAI Agents SDK 0.8.1 + LiteLLM
 - **Events**: Kafka (aiokafka)
 - **WebSocket**: Socket.IO (python-socketio)
+- **Scheduler**: APScheduler 3.10.4
+- **Email**: aiosmtplib 3.0.2 (Gmail SMTP)
 
 ### Infrastructure
 - **Container**: Docker (multi-stage builds)
@@ -102,9 +104,8 @@ TaskFlow is a full-stack application that combines traditional task management w
 - **Deployment**: Kubernetes manifests
 
 ## Project Structure
-
 ```
-phase-5-cloud/
+phase-5-claude/
 ├── frontend/                    # Next.js 16 frontend
 │   ├── app/                    # App Router pages
 │   ├── components/             # React components
@@ -119,24 +120,18 @@ phase-5-cloud/
 │   │   ├── services/          # Business logic
 │   │   ├── mcp/               # MCP tools
 │   │   ├── events/            # Kafka + WebSocket
+│   │   │   ├── publisher.py   # Kafka publisher
+│   │   │   ├── consumer.py    # Notification consumer (merged)
+│   │   │   ├── scheduler.py   # Reminder scheduler (merged)
+│   │   │   ├── schemas.py     # Event schemas
+│   │   │   └── websocket.py   # Socket.IO manager
 │   │   └── utils/             # Security, agent
 │   ├── alembic/               # Database migrations
 │   ├── Dockerfile             # Multi-stage build
 │   └── README.md              # Backend docs
-├── services/
-│   ├── notification-service/  # Email + WebSocket notifications
-│   │   ├── main.py
-│   │   ├── Dockerfile
-│   │   └── requirements.txt
-│   └── reminder-service/      # Due date monitoring
-│       ├── main.py
-│       ├── Dockerfile
-│       └── requirements.txt
 ├── k8s-manifests/              # Kubernetes deployments
 │   ├── backend-deployment.yaml
 │   ├── frontend-deployment.yaml
-│   ├── notification-deployment.yaml
-│   ├── reminder-deployment.yaml
 │   ├── redpanda-deployment.yaml
 │   └── ingress.yaml
 ├── kafka/                      # Kafka configuration
@@ -179,9 +174,9 @@ phase-5-cloud/
 
 **Event Flow**:
 1. User creates task → Backend publishes to `task-events`
-2. Notification service consumes → Sends WebSocket notification
-3. Reminder service monitors → Publishes to `reminders` when due
-4. Notification service consumes → Sends email reminder
+2. Notification consumer (in backend) → Sends WebSocket notification
+3. Reminder scheduler (in backend) monitors → Publishes to `reminders` when due
+4. Notification consumer → Sends email reminder
 
 ### 4. Real-time Notifications
 - **WebSocket**: Socket.IO for browser notifications
@@ -189,22 +184,14 @@ phase-5-cloud/
 - **Audio**: Sound alerts on task updates
 - **Visual**: Toast notifications with icons
 
-### 5. Microservices
-**Backend Service**:
-- REST API for task management
-- AI chat endpoint
-- JWT authentication
-- Kafka event publishing
-- WebSocket server
+### 5. Integrated Services (Merged into Backend)
+**Notification Consumer (events/consumer.py)**:
+- Consumes task-events → sends browser notifications via WebSocket
+- Consumes reminders → sends email reminders via Gmail SMTP
+- Runs as asyncio background task on startup
 
-**Notification Service**:
-- Consumes task-events and reminders
-- Sends browser notifications via WebSocket
-- Sends email reminders via SMTP
-- Fetches user data from backend internal API
-
-**Reminder Service**:
-- Polls backend every 1 minute for due tasks
+**Reminder Scheduler (events/scheduler.py)**:
+- Polls database every 1 minute for tasks due in 30 minutes
 - Publishes reminder events to Kafka
 - Tracks sent reminders (in-memory)
 - Clears reminders on task completion
@@ -227,7 +214,7 @@ phase-5-cloud/
 1. **Clone Repository**
 ```bash
 git clone <repository-url>
-cd phase-5-cloud
+cd phase-5-claude
 ```
 
 2. **Frontend Setup**
@@ -268,17 +255,9 @@ docker-compose up -d
 cd frontend
 docker build -t taskflow-frontend:latest .
 
-# Backend
+# Backend (includes notification + reminder logic)
 cd backend
 docker build -t taskflow-backend:latest .
-
-# Notification Service
-cd services/notification-service
-docker build -t taskflow-notification:latest .
-
-# Reminder Service
-cd services/reminder-service
-docker build -t taskflow-reminder:latest .
 ```
 
 #### Create Secrets
@@ -286,7 +265,9 @@ docker build -t taskflow-reminder:latest .
 kubectl create secret generic taskflow-secrets \
   --from-literal=database-url='postgresql://...' \
   --from-literal=jwt-secret='your-secret-key' \
-  --from-literal=openrouter-api-key='sk-or-v1-...'
+  --from-literal=openrouter-api-key='sk-or-v1-...' \
+  --from-literal=smtp-user='your-email@gmail.com' \
+  --from-literal=smtp-password='your-gmail-app-password'
 ```
 
 #### Deploy
@@ -294,15 +275,11 @@ kubectl create secret generic taskflow-secrets \
 # Deploy Redpanda (Kafka)
 kubectl apply -f k8s-manifests/redpanda-deployment.yaml
 
-# Deploy Backend
+# Deploy Backend (includes notification + reminder services)
 kubectl apply -f k8s-manifests/backend-deployment.yaml
 
 # Deploy Frontend
 kubectl apply -f k8s-manifests/frontend-deployment.yaml
-
-# Deploy Microservices
-kubectl apply -f k8s-manifests/notification-deployment.yaml
-kubectl apply -f k8s-manifests/reminder-deployment.yaml
 
 # Deploy Ingress
 kubectl apply -f k8s-manifests/ingress.yaml
@@ -312,6 +289,9 @@ kubectl apply -f k8s-manifests/ingress.yaml
 ```bash
 # Add to /etc/hosts
 echo "$(minikube ip) taskflow.local" | sudo tee -a /etc/hosts
+
+# Start tunnel
+minikube tunnel
 
 # Open browser
 open http://taskflow.local
@@ -338,25 +318,12 @@ OPENAI_MODEL=arcee-ai/trinity-large-preview:free
 KAFKA_BOOTSTRAP_SERVERS=taskflow-redpanda:9092
 KAFKA_ENABLED=true
 INTERNAL_SECRET=internal-service-secret-2026
-```
-
-#### Notification Service (.env)
-```bash
-KAFKA_BOOTSTRAP_SERVERS=taskflow-redpanda:9092
-BACKEND_URL=http://backend-service:8000
-INTERNAL_SECRET=internal-service-secret-2026
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=your-email@gmail.com
-SMTP_PASSWORD=your-app-password
-```
-
-#### Reminder Service (.env)
-```bash
-KAFKA_BOOTSTRAP_SERVERS=taskflow-redpanda:9092
-BACKEND_URL=http://backend-service:8000
-INTERNAL_SECRET=internal-service-secret-2026
-CHECK_INTERVAL_MINUTES=1
+SMTP_PASSWORD=your-gmail-app-password
+SMTP_FROM_EMAIL=your-email@gmail.com
+SMTP_FROM_NAME=TaskFlow Reminders
 ```
 
 ## API Documentation
@@ -410,8 +377,6 @@ GET /ready   # Readiness check
 
 ### Health Checks
 - Backend: `GET /health`, `GET /ready`
-- Notification Service: `GET /health`
-- Reminder Service: `GET /health`
 
 ### Logging
 - Structured logging with timestamps
@@ -492,6 +457,15 @@ kubectl exec -it <backend-pod> -- python -c "from src.database import engine; pr
 kubectl exec -it <backend-pod> -- alembic upgrade head
 ```
 
+**5. Email Reminders Not Sending**
+```bash
+# Check SMTP env vars
+kubectl exec -it <backend-pod> -- env | grep SMTP
+
+# Check consumer logs
+kubectl logs <backend-pod> -c backend | grep -E "email|Email"
+```
+
 ## Contributing
 
 1. Fork the repository
@@ -514,6 +488,6 @@ MIT License - see LICENSE file for details
 
 ---
 
-**Version**: 0.3.0 (Phase 5)
-**Last Updated**: 2026-02-21
+**Version**: 0.4.0 (Phase 5)
+**Last Updated**: 2026-03-21
 **Status**: Production Ready

@@ -101,13 +101,13 @@ Console Script → Web Application → AI Chatbot → Kubernetes → Cloud Produ
 │                    ┌────────────────────┴────────────────┐      │
 │                    │     Redpanda (Kafka)                │      │
 │                    │  Topics: task-events, reminders     │      │
-│                    └────┬─────────────────┬──────────────┘      │
-│                         │                 │                     │
-│              ┌──────────▼─────┐    ┌─────▼──────────┐          │
-│              │ Notification   │    │   Reminder     │          │
-│              │ Service        │    │   Service      │          │
-│              │ (Email+WS)     │    │ (Scheduler)    │          │
-│              └────────────────┘    └────────────────┘          │
+│                    └────────────────────────────────────┘      │
+│                                         │                        │
+│              ┌──────────────────────────▼──────────────────┐    │
+│              │ Backend (Integrated)                         │    │
+│              │ - Notification Consumer (WebSocket + Email)  │    │
+│              │ - Reminder Scheduler (APScheduler)           │    │
+│              └──────────────────────────────────────────────┘    │
 └─────────────────────────────────────────────────────────────────┘
                          │
                          ▼
@@ -128,6 +128,8 @@ phase-5-cloud/                           # Final Phase - Event-Driven Microservi
 │   │   ├── events/                      # Event-Driven Architecture
 │   │   │   ├── __init__.py
 │   │   │   ├── publisher.py            # Kafka event publisher
+│   │   │   ├── consumer.py             # Kafka consumer (notifications + email)
+│   │   │   ├── scheduler.py            # APScheduler (due date reminders)
 │   │   │   ├── schemas.py              # Event schemas (TaskEvent, ReminderEvent)
 │   │   │   └── websocket.py            # Socket.IO WebSocket manager
 │   │   ├── mcp/                         # Model Context Protocol Tools
@@ -230,23 +232,11 @@ phase-5-cloud/                           # Final Phase - Event-Driven Microservi
 │   ├── tailwind.config.js               # Tailwind CSS config
 │   └── tsconfig.json                    # TypeScript configuration
 │
-├── services/                            # Microservices
-│   ├── notification-service/            # Email + WebSocket Notifications
-│   │   ├── Dockerfile                   # Service container
-│   │   ├── main.py                      # FastAPI service (Kafka consumer)
-│   │   └── requirements.txt             # Python dependencies
-│   └── reminder-service/                # Due Date Monitoring
-│       ├── Dockerfile                   # Service container
-│       ├── main.py                      # FastAPI service (APScheduler)
-│       └── requirements.txt             # Python dependencies
-│
 ├── k8s-manifests/                       # Kubernetes Deployment Files
-│   ├── backend-deployment.yaml          # Backend + Dapr sidecar
+│   ├── backend-deployment.yaml          # Backend + Dapr sidecar + SMTP env vars
 │   ├── frontend-deployment.yaml         # Frontend deployment
 │   ├── ingress.yaml                     # Nginx ingress (taskflow.local)
-│   ├── notification-deployment.yaml     # Notification service
-│   ├── redpanda-deployment.yaml         # Kafka broker (Redpanda)
-│   └── reminder-deployment.yaml         # Reminder service
+│   └── redpanda-deployment.yaml         # Kafka broker (Redpanda)
 │
 ├── kafka/                               # Kafka Configuration
 │   ├── local/
@@ -304,12 +294,12 @@ phase-5-cloud/                           # Final Phase - Event-Driven Microservi
 - Real-time WebSocket notifications
 - Responsive design with Tailwind CSS
 
-**Microservices**
-- **Notification Service**: Consumes Kafka events, sends emails + WebSocket notifications
-- **Reminder Service**: Monitors due dates, publishes reminder events
+**Integrated Services** (Merged into Backend)
+- **Notification Consumer**: Consumes Kafka events, sends emails + WebSocket notifications
+- **Reminder Scheduler**: Monitors due dates, publishes reminder events
 
 **Infrastructure**
-- **Kubernetes**: 6 deployment manifests with Dapr integration
+- **Kubernetes**: 4 deployment manifests with Dapr integration
 - **Kafka**: 3 topics (task-events, reminders, task-updates)
 - **Ingress**: Nginx ingress controller (taskflow.local)
 
@@ -399,14 +389,14 @@ cd phase-5-cloud
 # Build images
 docker build -t taskflow-frontend:latest ./frontend
 docker build -t taskflow-backend:latest ./backend
-docker build -t taskflow-notification:latest ./services/notification-service
-docker build -t taskflow-reminder:latest ./services/reminder-service
 
 # Create secrets
 kubectl create secret generic taskflow-secrets \
   --from-literal=database-url='postgresql://...' \
   --from-literal=jwt-secret='your-secret' \
-  --from-literal=openrouter-api-key='sk-or-v1-...'
+  --from-literal=openrouter-api-key='sk-or-v1-...' \
+  --from-literal=smtp-user='your-email@gmail.com' \
+  --from-literal=smtp-password='your-gmail-app-password'
 
 # Deploy all services
 kubectl apply -f k8s-manifests/
@@ -472,9 +462,9 @@ All phases built with AI-assisted development and zero manual coding.
 - **Live Deployments**:
   - Phase 2 & 3: Vercel (Production)
   - Phase 4 & 5: Minikube (Local Kubernetes)
-- **Container Images**: 4 (Frontend, Backend, Notification Service, Reminder Service)
+- **Container Images**: 2 (Frontend, Backend)
 - **Kubernetes Resources**: 15+ (Deployments, Services, ConfigMaps, Secrets, Ingress)
-- **Microservices**: 3 (Backend, Notification Service, Reminder Service)
+- **Microservices**: 1 (Backend — includes notification + reminder)
 - **Kafka Topics**: 3 (task-events, reminders, task-updates)
 - **AI Features**: 5 MCP tools, conversational interface, stateless agent
 - **Real-time Features**: WebSocket notifications, email reminders, event-driven updates

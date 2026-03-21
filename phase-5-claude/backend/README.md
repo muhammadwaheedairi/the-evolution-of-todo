@@ -1,6 +1,6 @@
 # Backend - FastAPI AI-Powered Task Management API
 
-Production-ready FastAPI backend with AI agent, event-driven architecture, and microservices.
+Production-ready FastAPI backend with AI agent, event-driven architecture, and integrated notification/reminder system.
 
 ## Tech Stack
 
@@ -12,11 +12,13 @@ Production-ready FastAPI backend with AI agent, event-driven architecture, and m
 - **AI**: OpenAI Agents SDK 0.8.1 + LiteLLM
 - **Events**: Kafka (aiokafka) + Redpanda
 - **WebSocket**: Socket.IO (python-socketio)
+- **Scheduler**: APScheduler 3.10.4
+- **Email**: aiosmtplib 3.0.2 (Gmail SMTP)
 - **Migrations**: Alembic 1.14.0
 
 ## Project Structure
 
-```
+\`\`\`
 backend/
 ├── src/
 │   ├── main.py                  # FastAPI app entry
@@ -49,6 +51,8 @@ backend/
 │   │   └── config.py           # MCP configuration
 │   ├── events/
 │   │   ├── publisher.py        # Kafka publisher
+│   │   ├── consumer.py         # Kafka consumer (notifications + email)
+│   │   ├── scheduler.py        # APScheduler (due date reminders)
 │   │   ├── schemas.py          # Event schemas
 │   │   └── websocket.py        # Socket.IO manager
 │   └── utils/
@@ -59,95 +63,95 @@ backend/
 ├── Dockerfile                   # Multi-stage build
 ├── requirements.txt             # Dependencies
 └── pyproject.toml              # Project config
-```
+\`\`\`
 
 ## Database Schema
 
 ### users
-- `id` (UUID, PK)
-- `email` (unique, indexed)
-- `name` (string)
-- `password_hash` (Argon2)
-- `created_at`, `updated_at`
+- \`id\` (UUID, PK)
+- \`email\` (unique, indexed)
+- \`name\` (string)
+- \`password_hash\` (Argon2)
+- \`created_at\`, \`updated_at\`
 
 ### tasks
-- `id` (int, PK)
-- `user_id` (UUID, FK → users.id, indexed)
-- `title` (string, 1-200 chars)
-- `description` (text, nullable)
-- `completed` (boolean, default false)
-- `due_date` (datetime, nullable)
-- `recurrence_pattern` (string: daily/weekly/monthly, nullable)
-- `next_occurrence_date` (datetime, nullable)
-- `priority` (string: high/medium/low, default medium)
-- `tags` (JSON string, nullable)
-- `created_at`, `updated_at`
+- \`id\` (int, PK)
+- \`user_id\` (UUID, FK → users.id, indexed)
+- \`title\` (string, 1-200 chars)
+- \`description\` (text, nullable)
+- \`completed\` (boolean, default false)
+- \`due_date\` (datetime, nullable)
+- \`recurrence_pattern\` (string: daily/weekly/monthly, nullable)
+- \`next_occurrence_date\` (datetime, nullable)
+- \`priority\` (string: high/medium/low, default medium)
+- \`tags\` (JSON string, nullable)
+- \`created_at\`, \`updated_at\`
 
 ### conversations
-- `id` (int, PK)
-- `user_id` (UUID, FK → users.id, indexed)
-- `created_at`, `updated_at`
+- \`id\` (int, PK)
+- \`user_id\` (UUID, FK → users.id, indexed)
+- \`created_at\`, \`updated_at\`
 
 ### messages
-- `id` (int, PK)
-- `user_id` (UUID, FK → users.id, indexed)
-- `conversation_id` (int, FK → conversations.id, indexed)
-- `role` (string: user/assistant)
-- `content` (text)
-- `created_at`
+- \`id\` (int, PK)
+- \`user_id\` (UUID, FK → users.id, indexed)
+- \`conversation_id\` (int, FK → conversations.id, indexed)
+- \`role\` (string: user/assistant)
+- \`content\` (text)
+- \`created_at\`
 
 ## REST API Endpoints
 
 ### Authentication
-```
+\`\`\`
 POST /api/auth/register
 POST /api/auth/login
-```
+\`\`\`
 
 ### Tasks (JWT Required)
-```
+\`\`\`
 GET    /api/{user_id}/tasks              # List with filters
 POST   /api/{user_id}/tasks              # Create
 GET    /api/{user_id}/tasks/{task_id}    # Get one
 PUT    /api/{user_id}/tasks/{task_id}    # Update
 PATCH  /api/{user_id}/tasks/{task_id}/complete  # Toggle
 DELETE /api/{user_id}/tasks/{task_id}    # Delete
-```
+\`\`\`
 
 **Query Parameters**:
-- `status_filter`: all/pending/completed
-- `priority`: high/medium/low
-- `search`: Full-text search
-- `sort_by`: created_at/due_date/priority/title
-- `sort_order`: asc/desc
+- \`status_filter\`: all/pending/completed
+- \`priority\`: high/medium/low
+- \`search\`: Full-text search
+- \`sort_by\`: created_at/due_date/priority/title
+- \`sort_order\`: asc/desc
 
 ### Chat (JWT Required)
-```
+\`\`\`
 POST   /api/{user_id}/chat                      # Send message
 GET    /api/{user_id}/conversations/history     # Get history
 DELETE /api/{user_id}/conversations/clear       # Clear history
-```
+\`\`\`
 
 ### Health
-```
+\`\`\`
 GET /health    # Health check
 GET /ready     # Readiness check
-```
+\`\`\`
 
-### Internal API (Microservices)
-```
+### Internal API
+\`\`\`
 GET /api/internal/users/{user_id}/email         # Get user email
 GET /api/internal/tasks/due-soon                # Tasks due in 30min
-```
+\`\`\`
 
 ## AI Agent Architecture
 
 ### Agent Configuration (utils/agent.py)
-```python
+\`\`\`python
 # Uses OpenAI Agents SDK + LiteLLM
 # Model: arcee-ai/trinity-large-preview:free (via OpenRouter)
 # Tools: add_task, list_tasks, complete_task, delete_task, update_task
-```
+\`\`\`
 
 **System Prompt**:
 - Execute commands immediately without asking unnecessary questions
@@ -191,15 +195,15 @@ GET /api/internal/tasks/due-soon                # Tasks due in 30min
 3. **task-updates**: Real-time WebSocket updates
 
 ### Event Publisher (events/publisher.py)
-```python
+\`\`\`python
 class KafkaPublisher:
     - publish_task_event(event: TaskEvent)
     - publish_reminder(event: ReminderEvent)
     - publish_task_update(event: TaskUpdateEvent)
-```
+\`\`\`
 
 **Event Schema**:
-```python
+\`\`\`python
 {
   "event_type": "created|updated|completed|deleted",
   "task_id": int,
@@ -214,34 +218,36 @@ class KafkaPublisher:
   },
   "timestamp": str
 }
-```
+\`\`\`
 
 ### WebSocket Manager (events/websocket.py)
-```python
+\`\`\`python
 # Socket.IO server for real-time notifications
 # Tracks connected users: {user_id: {session_ids}}
 # Events: connect, disconnect, notification
-```
+\`\`\`
 
 ## Microservices
 
-### Notification Service (services/notification-service/)
+Notification and reminder services are merged into the backend process:
+
+### Notification Consumer (events/consumer.py)
 **Purpose**: Consume Kafka events and send notifications
 
 **Consumes**:
-- `task-events`: Browser notifications via WebSocket
-- `reminders`: Email notifications via SMTP
+- \`task-events\`: Browser notifications via WebSocket
+- \`reminders\`: Email notifications via SMTP
 
 **Features**:
 - WebSocket notifications to connected clients
 - Email reminders via Gmail SMTP
 - User email fetching from backend internal API
 
-### Reminder Service (services/reminder-service/)
+### Reminder Scheduler (events/scheduler.py)
 **Purpose**: Monitor due dates and publish reminders
 
 **Features**:
-- Polls backend every 1 minute for tasks due in 30 minutes
+- Polls database every 1 minute for tasks due in 30 minutes
 - Publishes reminder events to Kafka
 - Tracks sent reminders (in-memory cache)
 - Clears reminders on task completion/deletion
@@ -251,32 +257,32 @@ class KafkaPublisher:
 ## Security
 
 ### Authentication
-```python
+\`\`\`python
 # JWT with HS256 algorithm
 # Token expiry: 7 days
 # Password hashing: Argon2 (strongest algorithm)
-```
+\`\`\`
 
 ### User Isolation
-```python
+\`\`\`python
 # ALL queries filter by user_id
 # URL user_id must match JWT user_id
 # Return 404 (not 403) for unauthorized access
-```
+\`\`\`
 
 ### Middleware (middleware/auth.py)
-```python
+\`\`\`python
 get_current_user(token: str) -> User
 # Validates JWT, extracts user_id, returns User object
-```
+\`\`\`
 
 ## Docker Deployment
 
 ### Multi-Stage Build
-```dockerfile
+\`\`\`dockerfile
 # Stage 1: Builder (python:3.12-slim)
 - Install dependencies
-- Install aiokafka, python-socketio
+- Install aiokafka, python-socketio, apscheduler, aiosmtplib
 
 # Stage 2: Runner (python:3.12-slim)
 - Copy installed packages
@@ -284,10 +290,10 @@ get_current_user(token: str) -> User
 - Expose port 8000
 - Health check on /health
 - Start: uvicorn src.main:app
-```
+\`\`\`
 
 ### Build & Run
-```bash
+\`\`\`bash
 # Build
 docker build -t taskflow-backend:latest .
 
@@ -298,11 +304,11 @@ docker run -p 8000:8000 \
   -e OPENROUTER_API_KEY=... \
   -e KAFKA_BOOTSTRAP_SERVERS=taskflow-redpanda:9092 \
   taskflow-backend:latest
-```
+\`\`\`
 
 ## Environment Variables
 
-```bash
+\`\`\`bash
 # Database
 DATABASE_URL=postgresql://user:pass@host:5432/db
 
@@ -322,11 +328,19 @@ KAFKA_ENABLED=true
 
 # Internal
 INTERNAL_SECRET=internal-service-secret-2026
-```
+
+# SMTP (Email Reminders)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=taskflow.reminders@gmail.com
+SMTP_PASSWORD=your-gmail-app-password
+SMTP_FROM_EMAIL=taskflow.reminders@gmail.com
+SMTP_FROM_NAME=TaskFlow Reminders
+\`\`\`
 
 ## Development
 
-```bash
+\`\`\`bash
 # Install dependencies
 pip install -r requirements.txt
 
@@ -341,12 +355,12 @@ alembic revision --autogenerate -m "description"
 
 # Run tests
 pytest
-```
+\`\`\`
 
 ## API Response Examples
 
 ### Register
-```json
+\`\`\`json
 POST /api/auth/register
 {
   "name": "John Doe",
@@ -361,10 +375,10 @@ Response:
   "email": "john@example.com",
   "message": "User registered successfully"
 }
-```
+\`\`\`
 
 ### Chat
-```json
+\`\`\`json
 POST /api/{user_id}/chat
 {
   "message": "add high priority task fix bug due tomorrow"
@@ -376,10 +390,10 @@ Response:
   "response": "✅ Created task #5: 'fix bug' 🔴 | 📅 Due: 2026-02-22",
   "tool_calls": ["add_task"]
 }
-```
+\`\`\`
 
 ### List Tasks
-```json
+\`\`\`json
 GET /api/{user_id}/tasks?priority=high&search=bug
 
 Response:
@@ -399,26 +413,24 @@ Response:
     }
   ]
 }
-```
+\`\`\`
 
 ## Kubernetes Deployment
 
 ### Manifests (k8s-manifests/)
-- `backend-deployment.yaml`: Backend with Dapr sidecar
-- `frontend-deployment.yaml`: Next.js frontend
-- `notification-deployment.yaml`: Notification service
-- `reminder-deployment.yaml`: Reminder service
-- `redpanda-deployment.yaml`: Kafka broker
-- `ingress.yaml`: Nginx ingress (taskflow.local)
+- \`backend-deployment.yaml\`: Backend with Dapr sidecar + SMTP env vars
+- \`frontend-deployment.yaml\`: Next.js frontend
+- \`redpanda-deployment.yaml\`: Kafka broker
+- \`ingress.yaml\`: Nginx ingress (taskflow.local)
 
 ### Dapr Integration
-```yaml
+\`\`\`yaml
 annotations:
   dapr.io/enabled: "true"
   dapr.io/app-id: "backend"
   dapr.io/app-port: "8000"
   dapr.io/log-level: "info"
-```
+\`\`\`
 
 ## Performance
 
@@ -430,13 +442,13 @@ annotations:
 
 ## Monitoring
 
-- Health check: `GET /health`
-- Readiness check: `GET /ready`
+- Health check: \`GET /health\`
+- Readiness check: \`GET /ready\`
 - Kafka publisher status
 - WebSocket connection tracking
 - Logging: INFO level with timestamps
 
 ---
 
-**Version**: 0.3.0
-**Last Updated**: 2026-02-21
+**Version**: 0.4.0
+**Last Updated**: 2026-03-21
